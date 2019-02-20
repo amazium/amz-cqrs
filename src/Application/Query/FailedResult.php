@@ -6,10 +6,16 @@ use Amz\Core\Exception\ExtractableException;
 use Amz\Core\Exception\RuntimeException;
 use Amz\Core\Exception\WrappedExtractableException;
 use Throwable;
+use Iterator;
+use ArrayIterator;
 
 class FailedResult implements QueryResult
 {
+    /** @var ExtractableException */
     protected $exception;
+
+    /** @var Iterator */
+    private $iterator;
 
     public function __construct(Throwable $exception)
     {
@@ -17,6 +23,7 @@ class FailedResult implements QueryResult
             $exception = WrappedExtractableException::fromException($exception);
         }
         $this->exception = $exception;
+        $this->iterator = new ArrayIterator([]);
     }
 
     /**
@@ -51,74 +58,86 @@ class FailedResult implements QueryResult
         return $this->exception;
     }
 
+    /**
+     * @return Iterator
+     */
+    public function getIterator(): Iterator
+    {
+        return $this->iterator;
+    }
+
+    /**
+     * @return int
+     */
     public function currentPage(): int
     {
         return 0;
     }
 
+    /**
+     * @return int
+     */
     public function numberOfPages(): int
     {
         return 0;
     }
 
+    /**
+     * @return int
+     */
     public function recordsPerPage(): int
     {
         return 0;
     }
 
+    /**
+     * @return int
+     */
     public function numberOfRecords(): int
     {
         return 0;
     }
 
+    /**
+     * @return int
+     */
     public function count(): int
     {
         return 0;
     }
 
-    public function current()
-    {
-        return null;
-    }
-
-    public function next()
-    {
-        throw new RuntimeException('Cannot iterate records on a failed query result');
-    }
-
-    public function key()
-    {
-        return null;
-    }
-
-    public function valid()
+    /**
+     * @param mixed $offset
+     * @return bool
+     */
+    public function offsetExists($offset): bool
     {
         return false;
     }
 
-    public function rewind()
-    {
-        throw new RuntimeException('Cannot iterate records on a failed query result');
-    }
-
-    public function offsetExists($offset)
-    {
-        return false;
-    }
-
+    /**
+     * @param mixed $offset
+     * @return mixed|void
+     */
     public function offsetGet($offset)
     {
         throw new RuntimeException('Cannot get records from a failed query result');
     }
 
-    public function offsetSet($offset, $value)
+    /**
+     * @param mixed $offset
+     * @param mixed $value
+     */
+    public function offsetSet($offset, $value): void
     {
         throw new RuntimeException('Cannot add records on a failed query result');
     }
 
-    public function offsetUnset($offset)
+    /**
+     * @param mixed $offset
+     */
+    public function offsetUnset($offset): void
     {
         throw new RuntimeException('Cannot unset records on a failed query result');
     }
-
 }

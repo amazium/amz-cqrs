@@ -2,7 +2,9 @@
 
 namespace Amz\Cqrs\Application\Context;
 
-class Application
+use Amz\Core\IO\Context\ArrayContext;
+
+class Application extends ArrayContext
 {
 
 }

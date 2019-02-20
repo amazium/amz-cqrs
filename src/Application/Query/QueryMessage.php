@@ -2,7 +2,7 @@
 
 namespace Amz\Cqrs\Application\Query;
 
-use Amz\Core\Application\AbstractMessage;
+use Amz\Cqrs\Application\AbstractMessage;
 
 class QueryMessage extends AbstractMessage
 {

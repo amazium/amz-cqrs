@@ -16,10 +16,13 @@ class CommandResult implements Extractable
     /** @var DateTime */
     private $finishedAt;
 
+    /** @var string */
     private $state;
 
+    /** @var array */
     private $result;
 
+    /** @var bool */
     private $isError;
 
     protected function __construct(
@@ -61,7 +64,13 @@ class CommandResult implements Extractable
         if (!$exception instanceof ExtractableException) {
             $exception = WrappedExtractableException::fromException($exception);
         }
-        return new static($command, $state, [ 'exception' => $exception->getArrayCopy() ], true, $finishedAt);
+        return new static(
+            $command,
+            $state,
+            [ 'exception' => $exception->getArrayCopy() ],
+            true,
+            $finishedAt
+        );
     }
 
 
@@ -81,7 +90,7 @@ class CommandResult implements Extractable
                 'name' => $this->command->name(),
                 'createdAt' => $this->command->createdAt()->format('Y-m-d H:i:s'),
                 'command' => $this->command->command()->getArrayCopy($options),
-                'context' => $this->command->context()-> getArrayCopy($options),
+                'context' => is_null($this->command->context()) ? [] : $this->command->context()->getArrayCopy($options)
             ],
         ];
     }
@@ -133,5 +142,4 @@ class CommandResult implements Extractable
     {
         return !$this->isError;
     }
-
 }

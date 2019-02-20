@@ -7,19 +7,27 @@ use Throwable;
 
 class InvalidQueryException extends InvalidArgumentException
 {
+    /**
+     * @param string $handlerClass
+     * @param string $queryClass
+     * @param mixed $query
+     * @param int $code
+     * @param Throwable|null $previous
+     * @return InvalidQueryException
+     */
     public static function withHandlerAndQueryName(
         string $handlerClass,
-        string $commandClass,
-        $command,
+        string $queryClass,
+        $query,
         int $code = 0,
         Throwable $previous = null
     ): InvalidQueryException {
         return new static(
             sprintf(
-                'Handler %s is missing an __invoke method',
+                'Handler class %s expects a %s but received %s',
                 $handlerClass,
-                $commandClass,
-                is_object($command) ? get_class($command) : gettype($command)
+                $queryClass,
+                is_object($query) ? get_class($query) : gettype($query)
             ),
             $code,
             $previous

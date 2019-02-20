@@ -2,15 +2,15 @@
 
 namespace Amz\Cqrs\Application;
 
-use Amz\Core\Application\Context\Context;
-use Amz\Core\Application\Context\ContextCollection;
+use Amz\Core\IO\Context;
+use Amz\Core\IO\Context\ContextCollection;
 use Amz\Core\Contracts\Identifiable;
-use Amz\Core\Contracts\Nameable;
+use Amz\Core\Contracts\Named;
 use Amz\Core\Contracts\Traits\InjectTextualIdentifier;
 use DateTime;
 use Ramsey\Uuid\Uuid;
 
-abstract class AbstractMessage implements Identifiable, Nameable
+abstract class AbstractMessage implements Identifiable, Named
 {
     use InjectTextualIdentifier;
 
@@ -23,6 +23,13 @@ abstract class AbstractMessage implements Identifiable, Nameable
     /** @var ContextCollection */
     private $context;
 
+    /**
+     * AbstractMessage constructor.
+     * @param mixed $payload
+     * @param string|null $id
+     * @param string $createdAt
+     * @throws \Exception
+     */
     public function __construct($payload, string $id = null, string $createdAt = 'now')
     {
         $this->payload = $payload;
@@ -51,8 +58,11 @@ abstract class AbstractMessage implements Identifiable, Nameable
      * @param string $key
      * @return Context
      */
-    public function context(string $key): Context
+    public function context(string $key = null): ?Context
     {
+        if (is_null($key)) {
+            return $this->context;
+        }
         if (!$this->context->offsetExists($key)) {
             return null;
         }
@@ -62,10 +72,10 @@ abstract class AbstractMessage implements Identifiable, Nameable
     /**
      * @param string $key
      * @param Context $context
+     * @return void
      */
-    public function addContext(string $key, Context $context)
+    public function addContext(string $key, Context $context): void
     {
         $this->context->offsetSet($key, $context);
     }
-
 }

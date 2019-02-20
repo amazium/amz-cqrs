@@ -2,11 +2,12 @@
 
 namespace Amz\Cqrs\Application\Query;
 
+use Amz\Core\Contracts\Extractable;
 use ArrayAccess;
-use Iterator;
+use IteratorAggregate;
 use Countable;
 
-interface QueryResult extends ArrayAccess, Iterator, Countable
+interface QueryResult extends Extractable, ArrayAccess, IteratorAggregate, Countable
 {
     /**
      * Current page number

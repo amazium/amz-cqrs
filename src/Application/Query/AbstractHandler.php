@@ -2,9 +2,9 @@
 
 namespace Amz\Cqrs\Application\Query;
 
-use Amz\Core\Application\Query\Exception\HandlerInvokeMethodMissingException;
-use Amz\Core\Application\Query\Exception\InvalidQueryException;
-use Amz\Core\Infrastructure\Log\InjectLogger;
+use Amz\Core\Log\InjectLogger;
+use Amz\Cqrs\Application\Query\Exception\HandlerInvokeMethodMissingException;
+use Amz\Cqrs\Application\Query\Exception\InvalidQueryException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
@@ -18,7 +18,7 @@ abstract class AbstractHandler implements Handler
      */
     public function __construct(?LoggerInterface $logger = null)
     {
-        if ($logger) {
+        if (!is_null($logger)) {
             $this->setLogger($logger);
         }
     }
@@ -29,8 +29,8 @@ abstract class AbstractHandler implements Handler
     abstract public function queryClass(): string;
 
     /**
-     * @param $query
-     * @return mixed
+     * @param QueryMessage $query
+     * @return QueryResult
      */
     abstract public function __invoke($query): QueryResult;
 
@@ -48,19 +48,18 @@ abstract class AbstractHandler implements Handler
                 'id' => $message->id(),
                 'name' => $message->name(),
                 'command' => $message->query()->getArrayCopy(),
-                'context' => $message->context()->getArrayCopy(),
+                'context' => !is_null($message->context()) ? $message->context()->getArrayCopy() : [],
             ]
         );
-
-        // We need an invoke method
-        if (!method_exists([ $this, '__invoke' ])) {
-            throw HandlerInvokeMethodMissingException::withHandlerName(static::class);
-        }
 
         // Check we have the right incoming query class
         $queryClass = $this->queryClass();
         if (!$message->query() instanceof $queryClass) {
-            throw InvalidQueryException::withHandlerAndQueryName(static::class, $queryClass);
+            throw InvalidQueryException::withHandlerAndQueryName(
+                static::class,
+                $queryClass,
+                $message->query()
+            );
         }
 
         // Process the query

@@ -7,6 +7,14 @@ use Throwable;
 
 class InvalidCommandException extends InvalidArgumentException
 {
+    /**
+     * @param string $handlerClass
+     * @param string $commandClass
+     * @param mixed $command
+     * @param int $code
+     * @param Throwable|null $previous
+     * @return InvalidCommandException
+     */
     public static function withHandlerAndCommandName(
         string $handlerClass,
         string $commandClass,
@@ -16,7 +24,7 @@ class InvalidCommandException extends InvalidArgumentException
     ): InvalidCommandException {
         return new static(
             sprintf(
-                'Handler %s is missing an __invoke method',
+                'Handler class %s expects a %s but received %s',
                 $handlerClass,
                 $commandClass,
                 is_object($command) ? get_class($command) : gettype($command)

@@ -2,9 +2,9 @@
 
 namespace Amz\Cqrs\Application\Command;
 
-use Amz\Core\Application\Command\Exception\HandlerInvokeMethodMissingException;
-use Amz\Core\Application\Command\Exception\InvalidCommandException;
-use Amz\Core\Infrastructure\Log\InjectLogger;
+use Amz\Cqrs\Application\Command\Exception\HandlerInvokeMethodMissingException;
+use Amz\Cqrs\Application\Command\Exception\InvalidCommandException;
+use Amz\Core\Log\InjectLogger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
@@ -18,7 +18,7 @@ abstract class AbstractHandler implements Handler
      */
     public function __construct(?LoggerInterface $logger = null)
     {
-        if ($logger) {
+        if (!is_null($logger)) {
             $this->setLogger($logger);
         }
     }
@@ -29,8 +29,8 @@ abstract class AbstractHandler implements Handler
     abstract public function commandClass(): string;
 
     /**
-     * @param $command
-     * @return mixed
+     * @param CommandMessage $command
+     * @return CommandResult
      */
     abstract public function __invoke($command): CommandResult;
 
@@ -48,19 +48,18 @@ abstract class AbstractHandler implements Handler
                 'id' => $message->id(),
                 'name' => $message->name(),
                 'command' => $message->command()->getArrayCopy(),
-                'context' => $message->context()->getArrayCopy(),
+                'context' => !is_null($message->context()) ? $message->context()->getArrayCopy() : [],
             ]
         );
-
-        // We need an invoke method
-        if (!method_exists([ $this, '__invoke' ])) {
-            throw HandlerInvokeMethodMissingException::withHandlerName(static::class);
-        }
 
         // Check we have the right incoming command class
         $commandClass = $this->commandClass();
         if (!$message->command() instanceof $commandClass) {
-            throw InvalidCommandException::withHandlerAndCommandName(static::class, $commandClass);
+            throw InvalidCommandException::withHandlerAndCommandName(
+                static::class,
+                $commandClass,
+                $message->command()
+            );
         }
 
         // Process the command
@@ -72,7 +71,7 @@ abstract class AbstractHandler implements Handler
                 $result->getArrayCopy()
             );
         } catch (\Throwable $exception) {
-            $result = CommandResult::fromException($exception);
+            $result = CommandResult::fromException($message, $exception);
             $this->log(
                 LogLevel::ERROR,
                 sprintf('Error processing %s', $message->name()),

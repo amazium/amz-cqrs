@@ -2,7 +2,7 @@
 
 namespace Amz\Cqrs\Application\Command;
 
-use Amz\Core\Application\AbstractMessage;
+use Amz\Cqrs\Application\AbstractMessage;
 
 class CommandMessage extends AbstractMessage
 {

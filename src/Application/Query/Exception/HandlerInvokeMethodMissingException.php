@@ -7,6 +7,12 @@ use Throwable;
 
 class HandlerInvokeMethodMissingException extends LogicException
 {
+    /**
+     * @param string $handlerClass
+     * @param int $code
+     * @param Throwable|null $previous
+     * @return HandlerInvokeMethodMissingException
+     */
     public static function withHandlerName(
         string $handlerClass,
         int $code = 0,
