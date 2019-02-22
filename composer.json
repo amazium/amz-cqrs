@@ -24,7 +24,7 @@
         }
     },
     "require": {
-        "php": "7.3",
+        "php": "^7.3",
         "amazium/amz-core": "dev-develop",
         "psr/container": "^1.0",
         "psr/log": "^1.1",
