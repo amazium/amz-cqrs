@@ -2,7 +2,7 @@
 
 namespace Amz\Cqrs\Application\Command;
 
-use Amz\Cqrs\Application\Command\Exception\HandlerInvokeMethodMissingException;
+use Amz\Core\IO\Context;
 use Amz\Cqrs\Application\Command\Exception\InvalidCommandException;
 use Amz\Core\Log\InjectLogger;
 use Psr\Log\LoggerInterface;
@@ -11,6 +11,11 @@ use Psr\Log\LogLevel;
 abstract class AbstractHandler implements Handler
 {
     use InjectLogger;
+
+    /**
+     * @var Context
+     */
+    protected $context;
 
     /**
      * AbstractHandler constructor.
@@ -29,10 +34,20 @@ abstract class AbstractHandler implements Handler
     abstract public function commandClass(): string;
 
     /**
-     * @param CommandMessage $command
-     * @return CommandResult
+     * @return Context
      */
-    abstract public function __invoke($command): CommandResult;
+    public function context(): Context
+    {
+        return $this->context;
+    }
+
+    /**
+     * @param Context $context
+     */
+    public function setContext(Context $context): void
+    {
+        $this->context = $context;
+    }
 
     /**
      * @param CommandMessage $message
@@ -64,7 +79,8 @@ abstract class AbstractHandler implements Handler
 
         // Process the command
         try {
-            $result = $this($message);
+            $this->setContext($message->context());
+            $result = $this($message->command());
             $this->log(
                 LogLevel::INFO,
                 sprintf('Done processing %s', $message->name()),
