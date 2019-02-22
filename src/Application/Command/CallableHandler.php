@@ -2,51 +2,28 @@
 
 namespace Amz\Cqrs\Application\Command;
 
-use Amz\Core\IO\Context;
-use Amz\Cqrs\Application\Command\Exception\InvalidCommandException;
 use Amz\Core\Log\InjectLogger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
-abstract class AbstractHandler implements Handler
+class CallableHandler implements Handler
 {
     use InjectLogger;
 
-    /**
-     * @var Context
-     */
-    protected $context;
+    /** @var callable */
+    private $handler;
 
     /**
-     * AbstractHandler constructor.
+     * CallableHandler constructor.
+     * @param callable $handler
      * @param LoggerInterface|null $logger
      */
-    public function __construct(?LoggerInterface $logger = null)
+    private function __construct(callable $handler, ?LoggerInterface $logger)
     {
-        if (!is_null($logger)) {
+        $this->handler = $handler;
+        if ($logger) {
             $this->setLogger($logger);
         }
-    }
-
-    /**
-     * @return string
-     */
-    abstract public function commandClass(): string;
-
-    /**
-     * @return Context
-     */
-    public function context(): Context
-    {
-        return $this->context;
-    }
-
-    /**
-     * @param Context $context
-     */
-    public function setContext(Context $context): void
-    {
-        $this->context = $context;
     }
 
     /**
@@ -67,20 +44,10 @@ abstract class AbstractHandler implements Handler
             ]
         );
 
-        // Check we have the right incoming command class
-        $commandClass = $this->commandClass();
-        if (!$message->command() instanceof $commandClass) {
-            throw InvalidCommandException::withHandlerAndCommandName(
-                static::class,
-                $commandClass,
-                $message->command()
-            );
-        }
-
         // Process the command
         try {
-            $this->setContext($message->context());
-            $result = $this($message->command());
+            $handler = $this->handler;
+            $result = $handler($message->command(), $message->context());
             $this->log(
                 LogLevel::INFO,
                 sprintf('Done processing %s', $message->name()),
@@ -98,4 +65,5 @@ abstract class AbstractHandler implements Handler
         // Return the result
         return $result;
     }
+
 }
