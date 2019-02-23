@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Amazium : Genesis
+ *
+ * Author: Jeroen Keppens <jeroen.keppens@amazium.eu>
+ *
+ * Copyright Amazium OOD, 2019
+ */
+
 namespace Amz\Cqrs\Application\Command;
 
 use Amz\Core\Contracts\Extractable;
@@ -8,10 +16,10 @@ use Amz\Core\Exception\WrappedExtractableException;
 use DateTime;
 use Throwable;
 
-class CommandResult implements Extractable
+class Result
 {
-    /** @var CommandMessage */
-    private $command;
+    /** @var Extractable */
+    private $payload;
 
     /** @var DateTime */
     private $finishedAt;
@@ -26,13 +34,13 @@ class CommandResult implements Extractable
     private $isError;
 
     protected function __construct(
-        Extractable $command,
+        Extractable $payload,
         string $state,
         array $result,
         bool $isError,
         string $finishedAt = 'now'
     ) {
-        $this->command = $command;
+        $this->payload = $payload;
         $this->finishedAt = new DateTime($finishedAt);
         $this->state = $state;
         $this->result = $result;
@@ -44,35 +52,41 @@ class CommandResult implements Extractable
      * @param string $state
      * @param array $result
      * @param string $finishedAt
-     * @return CommandResult
+     * @return CommandMessageResult
      */
     public static function fromSuccess(
-        Extractable $command,
+        Extractable $payload,
         string $state,
         array $result,
         string $finishedAt = 'now'
-    ): CommandResult {
-        return new static($command, $state, $result, false, $finishedAt);
+    ): Result {
+        return new static($payload, $state, $result, false, $finishedAt);
     }
 
+    /**
+     * @param Extractable $payload
+     * @param Throwable $exception
+     * @param string $state
+     * @param string $finishedAt
+     * @return Result
+     */
     public static function fromException(
-        Extractable $command,
+        Extractable $payload,
         Throwable $exception,
         string $state = 'ERROR',
         string $finishedAt = 'now'
-    ): CommandResult {
+    ): Result {
         if (!$exception instanceof ExtractableException) {
             $exception = WrappedExtractableException::fromException($exception);
         }
         return new static(
-            $command,
+            $payload,
             $state,
             [ 'exception' => $exception->getArrayCopy() ],
             true,
             $finishedAt
         );
     }
-
 
     /**
      * @param array $options
@@ -81,26 +95,20 @@ class CommandResult implements Extractable
     public function getArrayCopy(array $options = []): array
     {
         return [
-            'id' => $this->command()->id(),
             'finishedAt' => $this->finishedAt()->format('Y-m-d H:i:s'),
             'state' => $this->state(),
             'result' => $this->result(),
             'isError' => $this->isError(),
-            'command' => [
-                'name' => $this->command->name(),
-                'createdAt' => $this->command->createdAt()->format('Y-m-d H:i:s'),
-                'command' => $this->command->command()->getArrayCopy($options),
-                'context' => is_null($this->command->context()) ? [] : $this->command->context()->getArrayCopy($options)
-            ],
+            'request' => $this->payload()->getArrayCopy($options),
         ];
     }
 
     /**
      * @return Extractable
      */
-    public function command(): Extractable
+    public function payload(): Extractable
     {
-        return $this->command;
+        return $this->payload;
     }
 
     /**
@@ -142,4 +150,5 @@ class CommandResult implements Extractable
     {
         return !$this->isError;
     }
+
 }

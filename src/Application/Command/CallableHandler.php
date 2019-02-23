@@ -28,9 +28,9 @@ class CallableHandler implements Handler
 
     /**
      * @param CommandMessage $message
-     * @return CommandResult
+     * @return Result
      */
-    final public function handle(CommandMessage $message): CommandResult
+    final public function handle(CommandMessage $message): Result
     {
         // Log starting
         $this->log(
@@ -54,7 +54,7 @@ class CallableHandler implements Handler
                 $result->getArrayCopy()
             );
         } catch (\Throwable $exception) {
-            $result = CommandResult::fromException($message, $exception);
+            $result = Result::fromException($message, $exception);
             $this->log(
                 LogLevel::ERROR,
                 sprintf('Error processing %s', $message->name()),

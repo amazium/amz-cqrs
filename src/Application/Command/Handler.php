@@ -6,7 +6,7 @@ interface Handler
 {
     /**
      * @param CommandMessage $message
-     * @return CommandResult
+     * @return Result
      */
-    public function handle(CommandMessage $message): CommandResult;
+    public function handle(CommandMessage $message): Result;
 }
