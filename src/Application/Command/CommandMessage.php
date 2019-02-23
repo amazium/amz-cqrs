@@ -2,6 +2,7 @@
 
 namespace Amz\Cqrs\Application\Command;
 
+use Amz\Core\Contracts\Extractable;
 use Amz\Cqrs\Application\AbstractMessage;
 
 class CommandMessage extends AbstractMessage
@@ -11,6 +12,7 @@ class CommandMessage extends AbstractMessage
      * @param Command $command
      * @param string|null $id
      * @param string $createdAt
+     * @throws \Exception
      */
     public function __construct(Command $command, string $id = null, string $createdAt = 'now')
     {
@@ -18,9 +20,9 @@ class CommandMessage extends AbstractMessage
     }
 
     /**
-     * @return Command
+     * @return Extractable
      */
-    public function command(): Command
+    public function command(): Extractable
     {
         return $this->payload;
     }

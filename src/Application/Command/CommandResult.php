@@ -26,7 +26,7 @@ class CommandResult implements Extractable
     private $isError;
 
     protected function __construct(
-        CommandMessage $command,
+        Extractable $command,
         string $state,
         array $result,
         bool $isError,
@@ -40,14 +40,14 @@ class CommandResult implements Extractable
     }
 
     /**
-     * @param CommandMessage $command
+     * @param Command $command
      * @param string $state
      * @param array $result
      * @param string $finishedAt
      * @return CommandResult
      */
     public static function fromSuccess(
-        CommandMessage $command,
+        Extractable $command,
         string $state,
         array $result,
         string $finishedAt = 'now'
@@ -56,7 +56,7 @@ class CommandResult implements Extractable
     }
 
     public static function fromException(
-        CommandMessage $command,
+        Extractable $command,
         Throwable $exception,
         string $state = 'ERROR',
         string $finishedAt = 'now'
@@ -96,9 +96,9 @@ class CommandResult implements Extractable
     }
 
     /**
-     * @return CommandMessage
+     * @return Extractable
      */
-    public function command(): CommandMessage
+    public function command(): Extractable
     {
         return $this->command;
     }

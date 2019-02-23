@@ -18,7 +18,7 @@ class CallableHandler implements Handler
      * @param callable $handler
      * @param LoggerInterface|null $logger
      */
-    private function __construct(callable $handler, ?LoggerInterface $logger)
+    public function __construct(callable $handler, ?LoggerInterface $logger)
     {
         $this->handler = $handler;
         if ($logger) {
