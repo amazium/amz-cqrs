@@ -48,7 +48,6 @@ class ZendDb implements Connection
             return [];
         }
         return ArrayUtils::iteratorToArray($result, true);
-
     }
 
     /**
